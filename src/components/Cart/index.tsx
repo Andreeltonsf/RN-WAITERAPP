@@ -4,6 +4,7 @@ import { MinusCircle } from "../../Icons/MinusCircle";
 import { PlusCircle } from "../../Icons/PlusCircle";
 import { CartItem } from "../../types/CartItem";
 import { Product } from "../../types/Products";
+import { api } from "../../utils/api";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { Button } from "../Button";
 import { OrderConfirmModal } from "../OrderConfirmModal";
@@ -24,6 +25,7 @@ interface CartProps {
   onAdd: (product: Product) => void;
   onDecrement: (product: Product) => void;
   onConfirmOrder: () => void;
+  selectedTable: string;
 }
 
 export function Cart({
@@ -31,8 +33,9 @@ export function Cart({
   onAdd,
   onDecrement,
   onConfirmOrder,
+  selectedTable,
 }: CartProps) {
-  const[isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const total = cartItems.reduce(
@@ -40,7 +43,18 @@ export function Cart({
     0
   );
 
-  function handleConfirmOrder() {
+  async function handleConfirmOrder() {
+    setIsLoading(true);
+    const payload = {
+      table: selectedTable,
+      products: cartItems.map((cartItem) => ({
+        product: cartItem.product._id,
+        quantity: cartItem.quantity,
+      })),
+    };
+    await api.post("/orders", payload);
+
+    setIsLoading(false);
     setIsModalVisible(true);
   }
 
